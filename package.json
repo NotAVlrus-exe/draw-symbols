@@ -1,0 +1,24 @@
+{
+  "name": "draw-symbols",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NotAVlrus-exe/draw-symbols.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NotAVlrus-exe/draw-symbols/issues"
+  },
+  "homepage": "https://github.com/NotAVlrus-exe/draw-symbols#readme",
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  }
+}
