@@ -1,9 +1,17 @@
-const canvas = document.createElement("canvas");
-document.body.appendChild(canvas);
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const scoreElement = document.getElementById("score");
 
-document.addEventListener("click", (event) => {
-    startTracking()
-    
+let isMouseDown = false;
+document.addEventListener("mousedown", () => {
+    if (!isMouseDown) {
+        startTracking();
+    }
+    isMouseDown = true;
+});
+
+document.addEventListener("mouseup", () => {
+    isMouseDown = false;
+    stopTracking();
 });
 
 const ctx = canvas.getContext("2d")!;
@@ -84,7 +92,8 @@ class sineWave {
     }
 }
 
-let lastPoint: Point = { x: 0, y: 0 };
+let lastPoint: Point = { x: Infinity, y: Infinity };
+let slowCount = 0;
 
 function addPoint(x: number, y: number) {
     Points.push({ x, y });
@@ -96,8 +105,21 @@ function addPoint(x: number, y: number) {
 
 
 function handleMouseMove(event: MouseEvent) {
-        const x = event.clientX;
-        const y = event.clientY;
+    const timeNow = performance.now();
+    if ((timeNow - lastTime > 50) && (slowCount > 2)) {
+        if (scoreElement) {
+            scoreElement.textContent = `too slow`;
+        }
+        stopTracking();
+        return;
+    } else if (timeNow - lastTime > 50) {
+        slowCount++;
+        console.log(`slowCount: ${slowCount}`);
+    }
+    lastTime = performance.now();
+    const bounds = canvas.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
+    const y = (event.clientY - bounds.top) * (canvas.height / bounds.height);
 
         const distance = Math.sqrt(
             (x - lastPoint.x) ** 2 +
@@ -109,10 +131,12 @@ function handleMouseMove(event: MouseEvent) {
 
             lastPoint = { x, y };
         }
+    const ad = calculateAverageDistance(Points, sineWave1);
+    const score = calculateScore(ad);
+    displayScore(score);
     }
 
 function distanceToSinus(sineWave: sineWave, point: Point): number {
-    console.log("Calculating distance to sinus...");
     let minDistance = Infinity;
     for (let i = sineWave.startX; i <= sineWave.endX; i++) {
         const angle = (((i - sineWave.startX) / (sineWave.endX - sineWave.startX)) * Math.PI * 2) * sineWave.periodes;
@@ -139,15 +163,18 @@ function startTracking() {
 
 function stopTracking() {
     document.removeEventListener("mousemove", handleMouseMove);
-    let ad = calculateAverageDistance(Points, sineWave1)
-    console.log(`Average Distance: ${ad}`);
-    console.log(`Score: ${calculateScore(ad)}`);
 }
 
 function calculateScore(averageDistance: number): number {
     const maxDistance = 50; 
     const score = Math.max(0, 100 - (averageDistance / maxDistance) * 100);
     return score;
+}
+
+function displayScore(score: number) {
+    if (scoreElement) {
+        scoreElement.textContent = `Score: ${Math.round(score)}`;
+    }
 }
 
 const sineWave1 = new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 2 }, canvas.width / 3, 15);

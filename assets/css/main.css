@@ -1,0 +1,20 @@
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+main {
+    display: flex;
+    padding: 10vh 10vw;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#score {
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
+    color: #000;
+}
