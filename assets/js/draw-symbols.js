@@ -1,16 +1,29 @@
 "use strict";
+const main = document.getElementsByTagName("main")[0];
 const canvas = document.getElementById("canvas");
 const scoreElement = document.getElementById("score");
+const resetButton = document.getElementById("reset-button");
+const colorBackgroundPrimary = getComputedStyle(document.documentElement).getPropertyValue("--color-background-primary").trim();
+const colorBackgroundSecondary = getComputedStyle(document.documentElement).getPropertyValue("--color-background-secondary").trim();
+const colorBackgroundTertiary = getComputedStyle(document.documentElement).getPropertyValue("--color-background-tertiary").trim();
+const colorPrimary = getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim();
+const colorSecondary = getComputedStyle(document.documentElement).getPropertyValue("--color-secondary").trim();
+const colorTextPrimary = getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim();
+const colorAccent = getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim();
+const colorFailed = "#ff0000";
 let isMouseDown = false;
 document.addEventListener("mousedown", () => {
     if (!isMouseDown) {
         startTracking();
     }
+    console.log("mousedown");
     isMouseDown = true;
 });
 document.addEventListener("mouseup", () => {
+    if (isMouseDown) {
+        stopTracking(false, "Mouse released");
+    }
     isMouseDown = false;
-    stopTracking();
 });
 const ctx = canvas.getContext("2d");
 const width = document.documentElement.clientWidth;
@@ -55,7 +68,7 @@ class sineWave {
             }
         }
         ctx.lineWidth = 20;
-        ctx.strokeStyle = "#4545455a";
+        ctx.strokeStyle = colorAccent;
         ctx.setLineDash([this.dash, this.dash]);
         ctx.stroke();
         ctx.setLineDash([]);
@@ -63,9 +76,10 @@ class sineWave {
 }
 let lastPoint = { x: Infinity, y: Infinity };
 let slowCount = 0;
+let isTracking = false;
 function addPoint(x, y) {
     Points.push({ x, y });
-    new circle({ x, y }, 8, "#ff0000");
+    new circle({ x, y }, 8, colorPrimary);
     if (x > sineWave1.endX - 5) {
         stopTracking();
     }
@@ -73,27 +87,23 @@ function addPoint(x, y) {
 }
 function handleMouseMove(event) {
     const timeNow = performance.now();
-    if ((timeNow - lastTime > 50) && (slowCount > 2)) {
-        if (scoreElement) {
-            scoreElement.textContent = `too slow`;
-        }
+    if ((timeNow - lastTime > 20) && (slowCount > 2)) {
         stopTracking();
         return;
     }
-    else if (timeNow - lastTime > 50) {
+    else if (timeNow - lastTime > 20) {
         slowCount++;
         console.log(`slowCount: ${slowCount}`);
+    }
+    else {
+        slowCount = 0;
     }
     lastTime = performance.now();
     const bounds = canvas.getBoundingClientRect();
     const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
     const y = (event.clientY - bounds.top) * (canvas.height / bounds.height);
-    const distance = Math.sqrt(Math.pow((x - lastPoint.x), 2) +
-        Math.pow((y - lastPoint.y), 2));
-    if (distance >= 3) {
-        addPoint(x, y);
-        lastPoint = { x, y };
-    }
+    addPoint(x, y);
+    lastPoint = { x, y };
     const ad = calculateAverageDistance(Points, sineWave1);
     const score = calculateScore(ad);
     displayScore(score);
@@ -118,10 +128,36 @@ function calculateAverageDistance(points, sineWave) {
     return totalDistance / points.length;
 }
 function startTracking() {
+    if (isTracking)
+        return;
     document.addEventListener("mousemove", handleMouseMove);
+    isTracking = true;
 }
-function stopTracking() {
+function stopTracking(success = true, reason = "") {
+    if (!isTracking)
+        return;
     document.removeEventListener("mousemove", handleMouseMove);
+    isTracking = false;
+    slowCount = 0;
+    scoreElement.classList.add("finished");
+    resetButton.classList.add("finished");
+    if (!success) {
+        scoreElement.textContent = reason;
+        scoreElement.style.color = colorFailed;
+    }
+    else {
+        const ad = calculateAverageDistance(Points, sineWave1);
+        const score = calculateScore(ad);
+        displayScore(score);
+    }
+}
+function resetGame() {
+    Points.length = 0;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 2 }, canvas.width / 3, 15);
+    scoreElement.textContent = "Score: 0";
+    scoreElement.classList.remove("finished");
+    resetButton.classList.remove("finished");
 }
 function calculateScore(averageDistance) {
     const maxDistance = 50;
