@@ -20,7 +20,7 @@ const colorFailed = "#ff0000";
 
 let isMouseDown = false;
 document.addEventListener("mousedown", () => {
-    if (!isTracking) {
+    if (!isTracking && !finished) {
         startTracking();
     }
     isMouseDown = true;
@@ -28,7 +28,6 @@ document.addEventListener("mousedown", () => {
 
 document.addEventListener("mouseup", () => {
     if (isTracking && !finished) {
-        console.log("heyho")
         stopTracking(false, "Mouse released");
     }
     isMouseDown = false;
@@ -128,13 +127,13 @@ function addPoint(x: number, y: number) {
 
 
 function handleMouseMove(event: MouseEvent) {
+    if (finished) return;
     const timeNow = performance.now();
     if ((timeNow - lastTime > 20) && (slowCount > 2)) {
-        stopTracking();
+        stopTracking(false, "too slow");
         return;
     } else if (timeNow - lastTime > 20) {
         slowCount++;
-        console.log(`slowCount: ${slowCount}`);
     } else {
         slowCount = 0;
     }
@@ -204,7 +203,8 @@ function resetGame() {
     new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 2 }, canvas.width / 3, 15);
     scoreElement.textContent = "Score: 0";
     scoreElement.classList.remove("finished");
-    resetButton.classList.remove("finished")
+    resetButton.classList.remove("finished");
+    finished = false;
 }
 
 function calculateScore(averageDistance: number): number {

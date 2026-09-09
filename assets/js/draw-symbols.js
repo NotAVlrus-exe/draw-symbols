@@ -13,14 +13,13 @@ const colorAccent = getComputedStyle(document.documentElement).getPropertyValue(
 const colorFailed = "#ff0000";
 let isMouseDown = false;
 document.addEventListener("mousedown", () => {
-    if (!isTracking) {
+    if (!isTracking && !finished) {
         startTracking();
     }
     isMouseDown = true;
 });
 document.addEventListener("mouseup", () => {
     if (isTracking && !finished) {
-        console.log("heyho");
         stopTracking(false, "Mouse released");
     }
     isMouseDown = false;
@@ -87,14 +86,15 @@ function addPoint(x, y) {
     ;
 }
 function handleMouseMove(event) {
+    if (finished)
+        return;
     const timeNow = performance.now();
     if ((timeNow - lastTime > 20) && (slowCount > 2)) {
-        stopTracking();
+        stopTracking(false, "too slow");
         return;
     }
     else if (timeNow - lastTime > 20) {
         slowCount++;
-        console.log(`slowCount: ${slowCount}`);
     }
     else {
         slowCount = 0;
@@ -160,6 +160,7 @@ function resetGame() {
     scoreElement.textContent = "Score: 0";
     scoreElement.classList.remove("finished");
     resetButton.classList.remove("finished");
+    finished = false;
 }
 function calculateScore(averageDistance) {
     const maxDistance = 50;
