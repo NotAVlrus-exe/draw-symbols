@@ -13,14 +13,14 @@ const colorAccent = getComputedStyle(document.documentElement).getPropertyValue(
 const colorFailed = "#ff0000";
 let isMouseDown = false;
 document.addEventListener("mousedown", () => {
-    if (!isMouseDown) {
+    if (!isTracking) {
         startTracking();
     }
-    console.log("mousedown");
     isMouseDown = true;
 });
 document.addEventListener("mouseup", () => {
-    if (isMouseDown) {
+    if (isTracking && !finished) {
+        console.log("heyho");
         stopTracking(false, "Mouse released");
     }
     isMouseDown = false;
@@ -77,6 +77,7 @@ class sineWave {
 let lastPoint = { x: Infinity, y: Infinity };
 let slowCount = 0;
 let isTracking = false;
+let finished = false;
 function addPoint(x, y) {
     Points.push({ x, y });
     new circle({ x, y }, 8, colorPrimary);
@@ -136,6 +137,7 @@ function startTracking() {
 function stopTracking(success = true, reason = "") {
     if (!isTracking)
         return;
+    finished = true;
     document.removeEventListener("mousemove", handleMouseMove);
     isTracking = false;
     slowCount = 0;
