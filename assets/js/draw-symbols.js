@@ -11,18 +11,18 @@ const colorSecondary = getComputedStyle(document.documentElement).getPropertyVal
 const colorTextPrimary = getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim();
 const colorAccent = getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim();
 const colorFailed = "#ff0000";
-let isMouseDown = false;
-document.addEventListener("mousedown", () => {
+let ispointerDown = false;
+document.addEventListener("pointerdown", () => {
     if (!isTracking && !finished) {
         startTracking();
     }
-    isMouseDown = true;
+    ispointerDown = true;
 });
-document.addEventListener("mouseup", () => {
+document.addEventListener("pointerup", () => {
     if (isTracking && !finished) {
-        stopTracking(false, "Mouse released");
+        stopTracking(false, "pointer released");
     }
-    isMouseDown = false;
+    ispointerDown = false;
 });
 const ctx = canvas.getContext("2d");
 const width = document.documentElement.clientWidth;
@@ -85,7 +85,7 @@ function addPoint(x, y) {
     }
     ;
 }
-function handleMouseMove(event) {
+function handlepointerMove(event) {
     if (finished)
         return;
     const timeNow = performance.now();
@@ -131,14 +131,14 @@ function calculateAverageDistance(points, sineWave) {
 function startTracking() {
     if (isTracking)
         return;
-    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("pointermove", handlepointerMove);
     isTracking = true;
 }
 function stopTracking(success = true, reason = "") {
     if (!isTracking)
         return;
     finished = true;
-    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("pointermove", handlepointerMove);
     isTracking = false;
     slowCount = 0;
     scoreElement.classList.add("finished");

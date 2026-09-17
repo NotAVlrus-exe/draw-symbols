@@ -18,19 +18,19 @@ const colorFailed = "#ff0000";
 
 
 
-let isMouseDown = false;
-document.addEventListener("mousedown", () => {
+let ispointerDown = false;
+document.addEventListener("pointerdown", () => {
     if (!isTracking && !finished) {
         startTracking();
     }
-    isMouseDown = true;
+    ispointerDown = true;
 });
 
-document.addEventListener("mouseup", () => {
+document.addEventListener("pointerup", () => {
     if (isTracking && !finished) {
-        stopTracking(false, "Mouse released");
+        stopTracking(false, "pointer released");
     }
-    isMouseDown = false;
+    ispointerDown = false;
 
 });
 
@@ -126,7 +126,7 @@ function addPoint(x: number, y: number) {
 }
 
 
-function handleMouseMove(event: MouseEvent) {
+function handlepointerMove(event: PointerEvent) {
     if (finished) return;
     const timeNow = performance.now();
     if ((timeNow - lastTime > 20) && (slowCount > 2)) {
@@ -172,9 +172,9 @@ function calculateAverageDistance(points: Point[], sineWave: sineWave): number {
     return totalDistance / points.length;
 }
 
-function startTracking() {
+function startTracking() {  
     if (isTracking) return;
-    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("pointermove", handlepointerMove);
     isTracking = true;
     
 }
@@ -182,7 +182,7 @@ function startTracking() {
 function stopTracking(success: boolean = true, reason: string = "") {
     if (!isTracking) return;
     finished = true;
-    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("pointermove", handlepointerMove);
     isTracking = false;
     slowCount = 0;
     scoreElement.classList.add("finished");
