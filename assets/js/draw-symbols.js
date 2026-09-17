@@ -162,8 +162,8 @@ function resetGame() {
     finished = false;
 }
 function createSineWave() {
-    const amplitude = Math.min(250, Math.max(40, canvas.height * 0.25));
-    const length = Math.min(canvas.width * 0.75, 1000);
+    const amplitude = Math.min(250, Math.max(40, canvas.height * 0.3));
+    const length = Math.min(canvas.width * 0.5, 1000);
     return new sineWave(amplitude, 1, { x: canvas.width / 2, y: canvas.height / 3 }, length, 15);
 }
 function resizeGame() {
