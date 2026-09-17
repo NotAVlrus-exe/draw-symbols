@@ -156,8 +156,9 @@ function stopTracking(success = true, reason = "") {
 function resetGame() {
     Points.length = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 2 }, canvas.width / 3, 15);
+    new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 3 }, canvas.width / 3, 15);
     scoreElement.textContent = "Score: 0";
+    scoreElement.style.color = colorTextPrimary;
     scoreElement.classList.remove("finished");
     resetButton.classList.remove("finished");
     finished = false;
@@ -172,5 +173,5 @@ function displayScore(score) {
         scoreElement.textContent = `Score: ${Math.round(score)}`;
     }
 }
-const sineWave1 = new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 2 }, canvas.width / 3, 15);
+const sineWave1 = new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 3 }, canvas.width / 3, 15);
 //# sourceMappingURL=draw-symbols.js.map
