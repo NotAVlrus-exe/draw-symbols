@@ -35,10 +35,8 @@ document.addEventListener("pointerup", () => {
 });
 
 const ctx = canvas.getContext("2d")!;
-const width = document.documentElement.clientWidth;
-const height = document.documentElement.clientHeight;
-canvas.width = width;
-canvas.height = height;
+canvas.width = document.documentElement.clientWidth;
+canvas.height = document.documentElement.clientHeight;
 
 
 // Time tracking
@@ -200,12 +198,24 @@ function stopTracking(success: boolean = true, reason: string = "") {
 function resetGame() {
     Points.length = 0;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 3 }, canvas.width / 3, 15);
+    sineWave1 = createSineWave();
     scoreElement.textContent = "Score: 0";
     scoreElement.style.color = colorTextPrimary;
     scoreElement.classList.remove("finished");
     resetButton.classList.remove("finished");
     finished = false;
+}
+
+function createSineWave(): sineWave {
+    const amplitude = Math.min(250, Math.max(40, canvas.height * 0.25));
+    const length = Math.min(canvas.width * 0.75, 1000);
+    return new sineWave(amplitude, 1, { x: canvas.width / 2, y: canvas.height / 3 }, length, 15);
+}
+
+function resizeGame() {
+    canvas.width = document.documentElement.clientWidth;
+    canvas.height = document.documentElement.clientHeight;
+    resetGame();
 }
 
 function calculateScore(averageDistance: number): number {
@@ -221,6 +231,8 @@ function displayScore(score: number) {
 }
 
 
-const sineWave1 = new sineWave(250, 1, { x: canvas.width / 2, y: canvas.height / 3 }, canvas.width / 3, 15);
+let sineWave1 = createSineWave();
+window.addEventListener("resize", resizeGame);
+window.addEventListener("orientationchange", resizeGame);
 
 
