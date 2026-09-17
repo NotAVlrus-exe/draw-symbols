@@ -15,7 +15,7 @@ const colorTextPrimary = getComputedStyle(document.documentElement).getPropertyV
 const colorAccent = getComputedStyle(document.documentElement).getPropertyValue("--color-accent").trim();
 
 const colorFailed = "#ff0000";
-
+const colorSucceeded = "#28b800"
 
 
 let ispointerDown = false;
@@ -67,7 +67,7 @@ class circle {
     }
 }
 
-class sineWave {
+class SineWave {
     amplitude: number;
     periodes: number;
     center: Point;
@@ -149,7 +149,7 @@ function handlepointerMove(event: PointerEvent) {
     displayScore(score);
 }
 
-function distanceToSinus(sineWave: sineWave, point: Point): number {
+function distanceToSine(sineWave: SineWave, point: Point): number {
     let minDistance = Infinity;
     for (let i = sineWave.startX; i <= sineWave.endX; i++) {
         const angle = (((i - sineWave.startX) / (sineWave.endX - sineWave.startX)) * Math.PI * 2) * sineWave.periodes;
@@ -162,10 +162,10 @@ function distanceToSinus(sineWave: sineWave, point: Point): number {
     return minDistance;
 }
 
-function calculateAverageDistance(points: Point[], sineWave: sineWave): number {
+function calculateAverageDistance(points: Point[], sineWave: SineWave): number {
     let totalDistance = 0;
     for (const point of points) {
-        totalDistance += distanceToSinus(sineWave, point);
+        totalDistance += distanceToSine(sineWave, point);
     }
     return totalDistance / points.length;
 }
@@ -189,6 +189,7 @@ function stopTracking(success: boolean = true, reason: string = "") {
         scoreElement.textContent = reason;
         scoreElement.style.color = colorFailed;
     } else {
+        scoreElement.style.color = colorSucceeded;
         const ad = calculateAverageDistance(Points, sineWave1);
         const score = calculateScore(ad);
         displayScore(score);
@@ -206,10 +207,10 @@ function resetGame() {
     finished = false;
 }
 
-function createSineWave(): sineWave {
-    const amplitude = Math.min(250, Math.max(40, canvas.height * 0.3));
+function createSineWave(): SineWave {
+    const amplitude = Math.min(250, Math.max(40, canvas.height * 0.25));
     const length = Math.min(canvas.width * 0.5, 1000);
-    return new sineWave(amplitude, 1, { x: canvas.width / 2, y: canvas.height / 3 }, length, 13);
+    return new SineWave(amplitude, 1, { x: canvas.width / 2, y: canvas.height / 3 }, length, 13);
 }
 
 function resizeGame() {
@@ -226,8 +227,16 @@ function calculateScore(averageDistance: number): number {
 
 function displayScore(score: number) {
     if (scoreElement) {
-        scoreElement.textContent = `Score: ${Math.round(score)}`;
+        if (Math.round(score) == (66 + 1)) {
+            scoreElement.textContent = "Score: bad number"
+            if (finished) {
+                scoreElement.style.color = colorFailed;
+            }
+        } else {
+            scoreElement.textContent = `Score: ${Math.round(score)}`;
+        }
     }
+
 }
 
 
