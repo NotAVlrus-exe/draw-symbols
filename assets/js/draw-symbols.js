@@ -13,9 +13,9 @@ const colorAccent = getComputedStyle(document.documentElement).getPropertyValue(
 const colorFailed = "#ff0000";
 const colorSucceeded = "#28b800";
 let ispointerDown = false;
-document.addEventListener("pointerdown", () => {
+document.addEventListener("pointerdown", (event) => {
     if (!isTracking && !finished) {
-        startTracking();
+        startTracking(event);
     }
     ispointerDown = true;
 });
@@ -25,6 +25,8 @@ document.addEventListener("pointerup", () => {
     }
     ispointerDown = false;
 });
+window.addEventListener("resize", resizeGame);
+window.addEventListener("orientationchange", resizeGame);
 const ctx = canvas.getContext("2d");
 canvas.width = document.documentElement.clientWidth;
 canvas.height = document.documentElement.clientHeight;
@@ -127,11 +129,16 @@ function calculateAverageDistance(points, sineWave) {
     }
     return totalDistance / points.length;
 }
-function startTracking() {
+function startTracking(event) {
     if (isTracking)
         return;
     document.addEventListener("pointermove", handlepointerMove);
     isTracking = true;
+    const bounds = canvas.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
+    if (x > sineWave1.center.x - sineWave1.length / 2 + 25) {
+        stopTracking(false, "start more left");
+    }
 }
 function stopTracking(success = true, reason = "") {
     if (!isTracking)
@@ -192,6 +199,4 @@ function displayScore(score) {
     }
 }
 let sineWave1 = createSineWave();
-window.addEventListener("resize", resizeGame);
-window.addEventListener("orientationchange", resizeGame);
 //# sourceMappingURL=draw-symbols.js.map
