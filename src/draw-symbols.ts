@@ -19,7 +19,8 @@ const colorSucceeded = "#28b800"
 
 
 let ispointerDown = false;
-document.addEventListener("pointerdown", (event: PointerEvent) => {
+canvas.addEventListener("pointerdown", (event: PointerEvent) => {
+    canvas.setPointerCapture(event.pointerId);
     if (!isTracking && !finished) {
         startTracking(event);
     }
@@ -27,12 +28,20 @@ document.addEventListener("pointerdown", (event: PointerEvent) => {
     ispointerDown = true;
 });
 
-document.addEventListener("pointerup", () => {
+canvas.addEventListener("pointerup", (event: PointerEvent) => {
     if (isTracking && !finished) {
         stopTracking(false, "pointer released");
     }
+    canvas.releasePointerCapture(event.pointerId);
     ispointerDown = false;
 
+});
+
+canvas.addEventListener("pointercancel", () => {
+    if (isTracking && !finished) {
+        stopTracking(false, "pointer cancelled");
+    }
+    ispointerDown = false;
 });
 
 window.addEventListener("resize", resizeGame);
@@ -176,7 +185,7 @@ function calculateAverageDistance(points: Point[], sineWave: SineWave): number {
 
 function startTracking(event: PointerEvent) {  
     if (isTracking) return;
-    document.addEventListener("pointermove", handlepointerMove);
+    canvas.addEventListener("pointermove", handlepointerMove);
     isTracking = true;
     const bounds = canvas.getBoundingClientRect();
     const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
@@ -189,7 +198,7 @@ function startTracking(event: PointerEvent) {
 function stopTracking(success: boolean = true, reason: string = "") {
     if (!isTracking) return;
     finished = true;
-    document.removeEventListener("pointermove", handlepointerMove);
+    canvas.removeEventListener("pointermove", handlepointerMove);
     isTracking = false;
     slowCount = 0;
     scoreElement.classList.add("finished");
