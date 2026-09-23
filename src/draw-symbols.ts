@@ -20,19 +20,22 @@ const colorSucceeded = "#28b800"
 
 let ispointerDown = false;
 canvas.addEventListener("pointerdown", (event: PointerEvent) => {
-    canvas.setPointerCapture(event.pointerId);
+    ispointerDown = true;
+    if (canvas.setPointerCapture) {
+        canvas.setPointerCapture(event.pointerId);
+    }
     if (!isTracking && !finished) {
         startTracking(event);
     }
-
-    ispointerDown = true;
 });
 
 canvas.addEventListener("pointerup", (event: PointerEvent) => {
     if (isTracking && !finished) {
         stopTracking(false, "pointer released");
     }
-    canvas.releasePointerCapture(event.pointerId);
+    if (canvas.hasPointerCapture?.(event.pointerId)) {
+        canvas.releasePointerCapture(event.pointerId);
+    }
     ispointerDown = false;
 
 });
@@ -43,6 +46,7 @@ canvas.addEventListener("pointercancel", () => {
     }
     ispointerDown = false;
 });
+canvas.addEventListener("pointermove", handlepointerMove);
 
 window.addEventListener("resize", resizeGame);
 window.addEventListener("orientationchange", resizeGame);
@@ -138,7 +142,7 @@ function addPoint(x: number, y: number) {
 
 
 function handlepointerMove(event: PointerEvent) {
-    if (finished) return;
+    if (finished || !ispointerDown || !isTracking) return;
     const timeNow = performance.now();
     if ((timeNow - lastTime > 20) && (slowCount > 2)) {
         stopTracking(false, "too slow");
@@ -185,7 +189,6 @@ function calculateAverageDistance(points: Point[], sineWave: SineWave): number {
 
 function startTracking(event: PointerEvent) {  
     if (isTracking) return;
-    canvas.addEventListener("pointermove", handlepointerMove);
     isTracking = true;
     const bounds = canvas.getBoundingClientRect();
     const x = (event.clientX - bounds.left) * (canvas.width / bounds.width);
@@ -198,7 +201,6 @@ function startTracking(event: PointerEvent) {
 function stopTracking(success: boolean = true, reason: string = "") {
     if (!isTracking) return;
     finished = true;
-    canvas.removeEventListener("pointermove", handlepointerMove);
     isTracking = false;
     slowCount = 0;
     scoreElement.classList.add("finished");
