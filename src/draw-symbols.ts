@@ -1,6 +1,7 @@
 const main = document.getElementsByTagName("main")[0];
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+const mysteriousBar = document.getElementById("mysterious-bar") as HTMLCanvasElement;
 const scoreElement = document.getElementById("score") as HTMLElement;
 const resetButton = document.getElementById("reset-button") as HTMLButtonElement;
 
