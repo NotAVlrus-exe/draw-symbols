@@ -1,6 +1,7 @@
 "use strict";
 const main = document.getElementsByTagName("main")[0];
 const canvas = document.getElementById("canvas");
+const mysteriousBar = document.getElementById("mysterious-bar");
 const scoreElement = document.getElementById("score");
 const resetButton = document.getElementById("reset-button");
 const colorBackgroundPrimary = getComputedStyle(document.documentElement).getPropertyValue("--color-background-primary").trim();
