@@ -1,7 +1,8 @@
 const main = document.getElementsByTagName("main")[0];
 
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-const mysteriousBar = document.getElementById("mysterious-bar") as HTMLCanvasElement;
+const xpBar = document.getElementById("xp-bar") as HTMLCanvasElement; 
+const levelDisplay = document.getElementById("level-display") as HTMLCanvasElement;
 const scoreElement = document.getElementById("score") as HTMLElement;
 const resetButton = document.getElementById("reset-button") as HTMLButtonElement;
 
@@ -38,19 +39,56 @@ canvas.addEventListener("pointerup", (event: PointerEvent) => {
 
 });
 
-canvas.addEventListener("pointercancel", () => {
+canvas.addEventListener("pointercancel", (event: PointerEvent) => {
     if (isTracking && !finished) {
         stopTracking(false, "pointer cancelled");
     }
     ispointerDown = false;
 });
 
+
+
+
+
+//cheats
+let mPressed = false;
+
+document.addEventListener("keydown", (event: KeyboardEvent) => {
+    if (event.key.toLowerCase() === "m") {
+        mPressed = true;
+    }
+});
+
+document.addEventListener("keyup", (event: KeyboardEvent) => {
+    if (event.key.toLowerCase() === "m") {
+        console.log("hello")
+        mPressed = false;
+    }
+});
+
 window.addEventListener("resize", resizeGame);
 window.addEventListener("orientationchange", resizeGame);
 
 const ctx = canvas.getContext("2d")!;
+const ctxxp = xpBar.getContext("2d")!;
+const ctxlevel = levelDisplay.getContext("2d")!;
 canvas.width = document.documentElement.clientWidth;
 canvas.height = document.documentElement.clientHeight;
+const xpBarWidth = 250;
+const xpBarHeight = 30;
+const xpBarScale = window.devicePixelRatio || 1;
+xpBar.width = xpBarWidth * xpBarScale;
+xpBar.height = xpBarHeight * xpBarScale;
+ctxxp.scale(xpBarScale, xpBarScale);
+
+const levelDisplayWidth = 250;
+const levelDisplayHeight = 30;
+const levelDisplayScale = window.devicePixelRatio || 1;
+levelDisplay.width = levelDisplayWidth * levelDisplayScale;
+levelDisplay.height = levelDisplayHeight * levelDisplayScale;
+ctxlevel.scale(levelDisplayScale, levelDisplayScale);
+
+
 
 
 // Time tracking
@@ -124,12 +162,89 @@ class SineWave {
     }
 }
 
+class XpSystem {
+    xpBar: HTMLCanvasElement;
+    levelDisplay: HTMLCanvasElement;
+    level: number;
+    currentxp: number;
+    currentMaxxp: number;
+    skillPoints:number;
+
+    constructor(xpBar: HTMLCanvasElement, levelDisplay:HTMLCanvasElement, level: number, currentxp: number, currentMaxxp: number, skillPoints:number) {
+        this.xpBar = xpBar;
+        this.levelDisplay = levelDisplay
+        this.level = level;
+        this.currentxp = currentxp;
+        this.currentMaxxp = currentMaxxp;
+        this.skillPoints = skillPoints;
+        this.updateXp()
+        this.updateLevel();
+        this.updateSkillPoints();
+    };
+
+    updateXp() {
+        ctxxp.clearRect(0, 0, xpBarWidth, xpBarHeight);
+        ctxxp.fillStyle = colorBackgroundSecondary;
+        ctxxp.fillRect(0, 0, xpBarWidth, xpBarHeight);
+        ctxxp.fillStyle = colorPrimary;
+        ctxxp.fillRect(0, 0, this.currentxp * xpBarWidth / this.currentMaxxp, xpBarHeight);
+        ctxxp.fillStyle = colorTextPrimary;
+        ctxxp.font = "bold 18px Arial, sans-serif";
+        ctxxp.textAlign = "center";
+        ctxxp.textBaseline = "middle";
+        ctxxp.fillText(`${this.currentxp}/${this.currentMaxxp}`, xpBarWidth / 2, xpBarHeight / 2);
+    };
+    addXp(xpToAdd:number = 0) {
+        this.currentxp += xpToAdd;
+        while (this.currentxp >= this.currentMaxxp) {
+            this.currentxp -= this.currentMaxxp;
+            this.currentMaxxp = Math.round((50 * 1.15^(this.level - 1)) * 10)/10
+            this.addLevel()
+        }
+        this.currentxp = Math.round(this.currentxp*100)/100
+        this.updateXp()
+    }
+    updateLevel() {
+        ctxlevel.clearRect(xpBarWidth/2, 0, xpBarWidth, xpBarHeight);
+        ctxlevel.fillStyle = colorTextPrimary;
+        ctxlevel.font = "bold 18px Arial, sans-serif";
+        ctxlevel.textAlign = "right";
+        ctxlevel.textBaseline = "middle";
+        ctxlevel.fillText(`Level: ${this.level}`, this.levelDisplay.width - 5 , this.levelDisplay.height / 2);
+    }
+
+    updateSkillPoints() {
+        ctxlevel.clearRect(0, 0, xpBarWidth/2, xpBarHeight);
+        ctxlevel.fillStyle = colorTextPrimary;
+        ctxlevel.font = "bold 18px Arial, sans-serif";
+        ctxlevel.textAlign = "left";
+        ctxlevel.textBaseline = "middle";
+        ctxlevel.fillText(`Skillpoints: ${this.skillPoints}`, 5 , this.levelDisplay.height / 2);
+
+    }
+
+    addLevel() {
+        this.level += 1;
+        this.skillPoints += 1;
+        this.updateLevel();
+        this.updateSkillPoints();
+    }
+}
+
+
+
 let lastPoint: Point = { x: Infinity, y: Infinity };
 let slowCount = 0;
 let isTracking = false;
 let finished = false;
 
-function addPoint(x: number, y: number) {
+function addPoint(x: number, y: number, sineWave:SineWave = sineWave1) {
+    if (mPressed) {
+        console.log("h")
+        const angle = (((x - sineWave.startX) / (sineWave.endX - sineWave.startX)) * Math.PI * 2) * sineWave.periodes;
+        console.log(angle)
+        y = -Math.sin(angle) * sineWave.amplitude + sineWave.center.y;
+    }
     Points.push({ x, y });
     new circle({ x, y }, 8, colorPrimary);
     if (x > sineWave1.endX - 5) {
@@ -165,7 +280,7 @@ function handlepointerMove(event: PointerEvent) {
 
 function distanceToSine(sineWave: SineWave, point: Point): number {
     let minDistance = Infinity;
-    for (let i = sineWave.startX; i <= sineWave.endX; i++) {
+    for (let i = sineWave.startX; i <= sineWave.endX * 1.2; i++) {
         const angle = (((i - sineWave.startX) / (sineWave.endX - sineWave.startX)) * Math.PI * 2) * sineWave.periodes;
         const y = -Math.sin(angle) * sineWave.amplitude + sineWave.center.y;
         const distance = Math.sqrt((point.x - i) ** 2 + (point.y - y) ** 2);
@@ -208,11 +323,16 @@ function stopTracking(success: boolean = true, reason: string = "") {
         scoreElement.textContent = reason;
         scoreElement.style.color = colorFailed;
     } else {
-        scoreElement.style.color = colorSucceeded;
+
         const ad = calculateAverageDistance(Points, sineWave1);
         const score = calculateScore(ad);
+        if (Math.round(score) >=80) {
+            scoreElement.style.color = colorSucceeded;
+        }
         displayScore(score);
+        level.addXp(score / 10)
     }
+
 }
 
 function resetGame() {
@@ -229,7 +349,7 @@ function resetGame() {
 function createSineWave(): SineWave {
     const amplitude = Math.min(250, Math.max(40, canvas.height * 0.25));
     const length = Math.min(canvas.width * 0.5, 1000);
-    return new SineWave(amplitude, 1, { x: canvas.width / 2, y: canvas.height / 3 }, length, 13);
+    return new SineWave(amplitude, 1, { x: canvas.width / 2, y: canvas.height / 2 }, length, 13);
 }
 
 function resizeGame() {
@@ -259,6 +379,8 @@ function displayScore(score: number) {
 }
 
 
+
+let level = new XpSystem(xpBar, levelDisplay, 0, 0, 50, 0);
 let sineWave1 = createSineWave();
 
 
